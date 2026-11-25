@@ -25,20 +25,29 @@ void testInsert() {
     assert(root == originalRoot && root->size == 1);
 
     deleteTree(root);
-}
 
-void testInsertionRotation(int first, int second, int third, int expectedRotations) {
+    // Single rotation
     Node::rotations = 0;
-    Node* root = insert(nullptr, first);
-    root = insert(root, second);
-    root = insert(root, third);
-
+    root = insert(nullptr, 10);
+    root = insert(root, 20);
+    root = insert(root, 30);
     assert(root != nullptr && root->key == 20);
     assert(root->height == 2 && root->size == 3);
     assert(root->left != nullptr && root->left->key == 10);
     assert(root->right != nullptr && root->right->key == 30);
-    assert(Node::rotations == expectedRotations);
+    assert(Node::rotations == 1);
+    deleteTree(root);
 
+    // Double rotation
+    Node::rotations = 0;
+    root = insert(nullptr, 30);
+    root = insert(root, 10);
+    root = insert(root, 20);
+    assert(root != nullptr && root->key == 20);
+    assert(root->height == 2 && root->size == 3);
+    assert(root->left != nullptr && root->left->key == 10);
+    assert(root->right != nullptr && root->right->key == 30);
+    assert(Node::rotations == 2);
     deleteTree(root);
 }
 
@@ -78,10 +87,9 @@ void testRemove() {
     assert(find(root, 30) != nullptr);
 
     deleteTree(root);
-}
 
-void testRemovalRotation() {
-    Node* root = insert(nullptr, 30);
+    // Removal with a rotation
+    root = insert(nullptr, 30);
     root = insert(root, 20);
     root = insert(root, 40);
     root = insert(root, 10);
@@ -120,11 +128,8 @@ void testPrintStats() {
 
 int main() {
     testInsert();
-    testInsertionRotation(10, 20, 30, 1);
-    testInsertionRotation(30, 10, 20, 2);
     testFind();
     testRemove();
-    testRemovalRotation();
     testPrintStats();
 
     std::cout << "All AVL tests passed.\n";
