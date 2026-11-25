@@ -1,4 +1,5 @@
 #include "avl.h"
+#include <iostream>
 #include <cassert>
 #include <algorithm>
 
@@ -8,6 +9,9 @@ namespace {
 int getHeight(Node* node) {
     return node == nullptr ? 0 : node->height;
 }
+int getSize(Node *node) {
+    return node == nullptr ? 0 : node->size;
+}
 
 //обновить высоту узла
 void updateHeight(Node* node) {
@@ -15,6 +19,10 @@ void updateHeight(Node* node) {
         getHeight(node->left),
         getHeight(node->right)
     );
+}
+
+void updateSize(Node *node) {
+    node->size = 1 + getSize(node->left) + getSize(node->right);
 }
 
 //получить фактор балансировки
@@ -34,6 +42,9 @@ Node *rotateRight(Node *y) {
     updateHeight(y);
     updateHeight(x);
 
+    updateSize(y);
+    updateSize(x);
+
     Node::rotations++;
     return x;
 }
@@ -49,6 +60,9 @@ Node *rotateLeft(Node *y) {
     updateHeight(y);
     updateHeight(x);
 
+    updateSize(y);
+    updateSize(x);
+
     Node::rotations++;
     return x;
 }
@@ -57,6 +71,7 @@ Node *rotateLeft(Node *y) {
 Node *balance(Node *y) {
     assert(y != nullptr);
     updateHeight(y);
+    updateSize(y);
     int bf = getBalance(y);
 
     if (bf > 1) {
@@ -74,7 +89,7 @@ Node *balance(Node *y) {
 Node *insert(Node* root, int key)
 {
     if (root == nullptr) {
-        Node *res = new Node{key, nullptr, nullptr, 1};
+        Node *res = new Node{key, nullptr, nullptr, 1, 1};
         return res;
     }
     if (key < root->key) 
@@ -87,6 +102,43 @@ Node *insert(Node* root, int key)
     root = balance(root);
     return root;
 }
-Node* remove(Node* root, int key);
-Node* find(Node* root, int key);
-void printStats();
+Node* remove(Node* root, int key)
+{
+    if(root == nullptr) return nullptr;
+
+    if(key < root->key) root->left = remove(root->left, key);
+    else if(key > root->key) root->right = remove(root->right, key);
+    else{
+        if(root->left == nullptr || root->right == nullptr){
+             Node* child = root->left ? root->left : root->right;
+             
+             if(child == nullptr){
+                delete root;
+                return nullptr;
+             }else{
+                Node* old = root;
+                root = child;
+                delete old;
+             }
+        }else{
+            Node* kid = root->right;
+            while(kid->left != nullptr){kid = kid->left;}
+            root->key = kid->key;
+            root->right = remove(root->right, kid->key);
+            }
+        }
+    root = balance(root);
+    return root;
+}  
+Node* find(Node* root, int key) {
+    while (root != nullptr && root->key != key) {
+        root = key < root->key ? root->left : root->right;
+    }
+    return root;
+}
+
+void printStats(Node *root) {
+    std::cout << "Depth: " << getHeight(root) << '\n'
+              << "Rotations: " << Node::rotations << '\n'
+              << "Size: " << getSize(root);
+}
