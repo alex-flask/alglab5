@@ -85,6 +85,16 @@ Node *balance(Node *y) {
     }
     return y;
 }
+int countLessOrEqual(Node* root,int key){
+    if(!root) return 0;
+
+    if(root->key <= key){
+        int sizeL = (root->left) ? root->left->size : 0;
+        return sizeL + 1 + countLessOrEqual(root->right,key);
+    }else{
+        return countLessOrEqual(root->left,key);
+    }
+}
 }
 Node *insert(Node* root, int key)
 {
@@ -102,6 +112,13 @@ Node *insert(Node* root, int key)
     root = balance(root);
     return root;
 }
+int count_in_range(Node* root,int left,int right){
+    if(left>right) return 0;
+
+    int countR = countLessOrEqual(root,right);
+    int countL = countLessOrEqual(root,left-1);
+    return countR - countL;
+}
 Node* remove(Node* root, int key)
 {
     if(root == nullptr) return nullptr;
@@ -116,10 +133,9 @@ Node* remove(Node* root, int key)
                 delete root;
                 return nullptr;
              }else{
-                Node* old = root;
-                root = child;
-                delete old;
-             }
+                *root = *child;   
+                delete child;
+            }
         }else{
             Node* kid = root->right;
             while(kid->left != nullptr){kid = kid->left;}
